@@ -5,19 +5,22 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Download project
         uses: actions/checkout@v4
 
       - name: Unpack Android project
         run: |
+          set -euo pipefail
           ZIP=$(find . -maxdepth 1 -iname 'Don_Ren_Android_Studio_Project*.zip' -print -quit)
           test -n "$ZIP" || { echo "Project ZIP not found"; exit 1; }
-          unzip -q "$ZIP"
+          unzip -oq "$ZIP"
           test -f don_ren_android_project/app/build.gradle
 
       - name: Setup Java
@@ -25,10 +28,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
